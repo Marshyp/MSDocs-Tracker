@@ -99,13 +99,6 @@ const rssUrl = React.useMemo(() => {
         >
           {loading ? 'Loading…' : 'Refresh'}
         </button>
-        <div className="ml-auto flex items-center gap-3 text-xs text-slate-400">
-        <span>
-          Showing <code className="rounded bg-slate-800/20 px-1 py-[2px]">
-            repo:{repo} merged:&gt;={sinceISO}
-          </code>
-        </span>
-
         <a
           className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-2
                     font-semibold text-slate-900 hover:border-sky-400
@@ -117,7 +110,6 @@ const rssUrl = React.useMemo(() => {
         >
           RSS Feed
         </a>
-      </div>
       </div>
 
       {error && (
