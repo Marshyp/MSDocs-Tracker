@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MicrosoftDocs Change Tracker</title>
+    <meta name="description" content="Track recent merged changes across MicrosoftDocs repositories with smart tagging and filters." />
+
+    <!-- Minimal, sleek styles with light/dark mode -->
+    <style>
+      :root {
+        --bg: #ffffff;
+        --muted: #f5f7fb;
+        --text: #0f172a; /* slate-900 */
+        --subtle: #475569; /* slate-600 */
+        --card: #ffffff;
+        --border: #e2e8f0; /* slate-200 */
+        --accent: #0ea5e9; /* sky-500 */
+        --accent-weak: #e0f2fe; /* sky-100 */
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0b1220;
+          --muted: #0f172a;
+          --text: #e5e7eb; /* gray-200 */
+          --subtle: #94a3b8; /* slate-400 */
+          --card: #0f172a;
+          --border: #1f2937; /* gray-800 */
+          --accent: #38bdf8; /* sky-400 */
+          --accent-weak: #082f49; /* sky-950 */
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        background: var(--bg);
+        color: var(--text);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      a { color: var(--accent); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+
+      .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 24px 16px 64px;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+      .title {
+        font-size: clamp(20px, 3.5vw, 28px);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+      .subtitle { color: var(--subtle); font-size: 14px; margin-top: 6px; }
+
+      .toolbar {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        margin: 16px 0 8px;
+      }
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+      }
+      .input, select {
+        background: var(--card);
+        border: 1px solid var(--border);
+        color: var(--text);
+        border-radius: 12px;
+        padding: 10px 12px;
+        font-size: 14px;
+      }
+      .btn {
+        border: 1px solid var(--border);
+        background: var(--card);
+        color: var(--text);
+        padding: 10px 14px;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .btn:hover { border-color: var(--accent); }
+      .btn[disabled] { opacity: .6; cursor: not-allowed; }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: var(--card);
+        font-size: 12px;
+        cursor: pointer;
+        user-select: none;
+      }
+      .chip.active { border-color: var(--accent); background: var(--accent-weak); }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 12px;
+        margin-top: 12px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 14px;
+      }
+      .card h3 {
+        font-size: 15px; margin: 0 0 6px; line-height: 1.35;
+      }
+      .meta {
+        color: var(--subtle);
+        font-size: 12px;
+        display: flex; flex-wrap: wrap; gap: 8px;
+      }
+      .tag {
+        font-size: 11px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: var(--muted);
+      }
+      .footer { margin-top: 20px; color: var(--subtle); font-size: 12px; }
+      .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+      .spacer { flex: 1 1 auto; }
+      .pillnote { font-size: 12px; color: var(--subtle); }
+      .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; background: var(--muted); border-radius: 6px; padding: 1px 6px; }
+      .highlight { outline: 2px solid var(--accent); border-radius: 12px; }
+    </style>
+
+    <!-- React via CDN + Babel Standalone so this is deployable as a single file -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useEffect, useMemo, useRef, useState } = React;
+
+      // --- Tagging rules (edit to taste) ---
+      const TAG_RULES = [
+        { name: 'Defender', kws: ['defender', 'microsoft defender', 'mdf', 'mdatp', 'mde', 'mdc', 'mdo'] },
+        { name: 'Microsoft 365', kws: ['m365', 'microsoft 365', 'office 365', 'o365'] },
+        { name: 'Entra', kws: ['entra', 'azure ad', 'aad', 'conditional access'] },
+        { name: 'Purview', kws: ['purview', 'compliance', 'dlp', 'information protection'] },
+        { name: 'Sentinel', kws: ['sentinel', 'siem', 'soar', 'microsoft sentinel'] },
+        { name: 'Intune', kws: ['intune', 'endpoint manager', 'mam', 'mdm'] },
+        { name: 'Azure', kws: ['azure', 'arm', 'bicep', 'aks', 'app service'] },
+        { name: 'Windows', kws: ['windows', 'win11', 'win10'] },
+        { name: 'Teams', kws: ['teams', 'microsoft teams'] },
+        { name: 'SharePoint', kws: ['sharepoint', 'onedrive'] },
+        { name: 'Exchange', kws: ['exchange', 'exchange online', 'exo'] },
+        { name: 'Edge', kws: ['edge'] },
+      ];
+
+      function classifyTags(text, repo) {
+        const hay = `${(text||'')} ${(repo||'')}`.toLowerCase();
+        const tags = [];
+        for (const rule of TAG_RULES) {
+          if (rule.kws.some(k => hay.includes(k))) tags.push(rule.name);
+        }
+        if (!tags.length) tags.push('Other');
+        return tags;
+      }
+
+      // Helpers to avoid optional chaining and allow tests
+      function safeGetRepoName(repository_url) {
+        if (!repository_url) return '';
+        const parts = repository_url.split('/');
+        return parts[parts.length - 1] || '';
+      }
+      function stripApiPrefix(repository_url) {
+        if (!repository_url) return 'MicrosoftDocs';
+        return repository_url.replace('https://api.github.com/repos/', '');
+      }
+      function safeUserLogin(user) {
+        return (user && user.login) ? user.login : 'unknown';
+      }
+
+      // Simple in-memory cache for this session
+      const cache = new Map();
+      async function gh(url) {
+        if (cache.has(url)) return cache.get(url);
+        const res = await fetch(url, { headers: { 'Accept': 'application/vnd.github+json' } });
+        if (!res.ok) throw new Error(`GitHub API ${res.status}: ${url}`);
+        const data = await res.json();
+        cache.set(url, data);
+        return data;
+      }
+
+      function usePersistedState(key, initial) {
+        const [state, setState] = useState(() => {
+          try { const s = localStorage.getItem(key); return s ? JSON.parse(s) : initial; } catch (e) { return initial; }
+        });
+        useEffect(() => { try { localStorage.setItem(key, JSON.stringify(state)); } catch (e) {} }, [key, state]);
+        return [state, setState];
+      }
+
+      function formatDate(iso) {
+        try { return new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }); } catch (e) { return iso; }
+      }
+
+      function App() {
+        const [daysBack, setDaysBack] = usePersistedState('daysBack', 14);
+        const [selectedTag, setSelectedTag] = usePersistedState('selectedTag', 'All');
+        const [query, setQuery] = usePersistedState('query', '');
+        const [loading, setLoading] = useState(false);
+        const [items, setItems] = useState([]);
+        const [error, setError] = useState('');
+        const [lastVisit, setLastVisit] = usePersistedState('lastVisit', null);
+        const firstLoadRef = useRef(true);
+
+        const sinceISO = useMemo(() => {
+          const d = new Date();
+          d.setDate(d.getDate() - Number(daysBack || 14));
+          return d.toISOString().slice(0, 10);
+        }, [daysBack]);
+
+        // Fetch merged PRs across MicrosoftDocs since a date
+        async function load() {
+          setLoading(true); setError('');
+          try {
+            // Use Search Issues API for merged PRs in org since date; sort by updated
+            const perPage = 100;
+            const searchQ = encodeURIComponent(`org:MicrosoftDocs is:pr is:merged merged:>=${sinceISO}` + (query ? ` ${query}` : ''));
+            const url = `https://api.github.com/search/issues?q=${searchQ}&sort=updated&order=desc&per_page=${perPage}`;
+            const data = await gh(url);
+            const itemsArr = (data && data.items) ? data.items : [];
+            // items: PRs (issues)
+            const mapped = itemsArr.map(function(it){
+              const repo = safeGetRepoName(it.repository_url);
+              const tags = classifyTags(String(it.title || '') + ' ' + String(it.body || ''), repo);
+              const mergedTime = it.closed_at || it.merged_at || it.updated_at;
+              const highlight = lastVisit ? (new Date(mergedTime) > new Date(lastVisit)) : false;
+              return {
+                id: it.id,
+                number: it.number,
+                title: it.title,
+                url: it.html_url,
+                repo: stripApiPrefix(it.repository_url),
+                merged_at: mergedTime,
+                user: safeUserLogin(it.user),
+                body: it.body || '',
+                tags: tags,
+                highlight: highlight,
+              };
+            });
+            setItems(mapped);
+            // Set last visit only on first successful automatic load
+            if (firstLoadRef.current) {
+              firstLoadRef.current = false;
+              setLastVisit(new Date().toISOString());
+            }
+          } catch (e) {
+            setError(e.message || String(e));
+          } finally {
+            setLoading(false);
+          }
+        }
+
+        useEffect(() => { load(); /* load on mount and when daysBack changes via button */ }, []);
+
+        const visible = items.filter(function(it){
+          if (selectedTag !== 'All' && it.tags.indexOf(selectedTag) === -1) return false;
+          return true;
+        });
+
+        return (
+          <div className="container">
+            <header>
+              <div>
+                <div className="title">MicrosoftDocs Change Tracker</div>
+                <div className="subtitle">Merged PRs across <a href="https://github.com/orgs/MicrosoftDocs/repositories" target="_blank" rel="noreferrer">MicrosoftDocs</a> — filter by topic, search, and explore summaries.</div>
+              </div>
+              <div className="row">
+                <button className="btn" onClick={() => {
+                  const mode = document.documentElement.getAttribute('data-mode');
+                  const next = mode === 'dark' ? 'light' : 'dark';
+                  document.documentElement.setAttribute('data-mode', next);
+                }}>Toggle Theme</button>
+              </div>
+            </header>
+
+            <div className="toolbar">
+              <div className="controls">
+                <input className="input" placeholder="Search PR titles/bodies… (e.g., Defender)" value={query} onChange={function(e){setQuery(e.target.value);}} />
+                <select value={daysBack} onChange={function(e){setDaysBack(Number(e.target.value));}} className="input">
+                  {[7,14,30,60,90].map(function(d){ return <option key={d} value={d}>Last {d} days</option>; })}
+                </select>
+                <button className="btn" onClick={load} disabled={loading}>{loading ? 'Loading…' : 'Refresh'}</button>
+              </div>
+              <div className="row" style={{justifyContent:'flex-end'}}>
+                <span className="pillnote">Showing <span className="kbd">merged:>={sinceISO}</span></span>
+              </div>
+            </div>
+
+            <div className="row" style={{gap:6, marginTop:6, flexWrap:'wrap'}}>
+              <button className={"chip "+(selectedTag==='All'?'active':'')} onClick={function(){setSelectedTag('All');}}>All</button>
+              {TAG_RULES.map(function(r){ return (
+                <button key={r.name} className={"chip "+(selectedTag===r.name?'active':'')} onClick={function(){setSelectedTag(r.name);}}>{r.name}</button>
+              ); })}
+              <button className={"chip "+(selectedTag==='Other'?'active':'')} onClick={function(){setSelectedTag('Other');}}>Other</button>
+            </div>
+
+            {error && (
+              <div className="card" style={{marginTop:12, borderColor:'#ef4444'}}>
+                <strong>GitHub API error:</strong> {error}
+                <div className="subtitle" style={{marginTop:6}}>Tip: You may be hitting the unauthenticated rate limit. Add <span className="kbd">?token=&lt;YOUR_GITHUB_TOKEN&gt;</span> in the site URL to authenticate (see below).
+                </div>
+              </div>
+            )}
+
+            <div className="grid">
+              {visible.map(function(it){ return (
+                <article key={it.id} className={"card "+(it.highlight?'highlight':'') }>
+                  <h3><a href={it.url} target="_blank" rel="noreferrer">{it.title}</a></h3>
+                  <div className="meta">
+                    <span>Repo: <span className="kbd">{it.repo}</span></span>
+                    <span>By <span className="kbd">{it.user}</span></span>
+                    <span>Merged: {formatDate(it.merged_at)}</span>
+                  </div>
+                  <p style={{marginTop:10, whiteSpace:'pre-wrap'}}>{(it.body || '').slice(0, 280)}{it.body && it.body.length > 280 ? '…' : ''}</p>
+                  <div className="row" style={{marginTop:8}}>
+                    {it.tags.map(function(t){ return <span key={t} className="tag">{t}</span>; })}
+                    <span className="spacer" />
+                    <a className="btn" href={it.url} target="_blank" rel="noreferrer">View Pull Request →</a>
+                  </div>
+                </article>
+              ); })}
+            </div>
+
+            <div className="footer">
+              <p>
+                New since last visit are outlined. Data comes from the GitHub Search API (<span className="kbd">org:MicrosoftDocs is:pr is:merged</span>), limited to the most relevant matches. No server or database needed.
+              </p>
+              <details>
+                <summary><strong>Optional: authenticate to raise rate limits</strong></summary>
+                <p>If you see rate-limit errors, you can pass a GitHub fine-grained personal access token in the URL like: <span className="kbd">?token=ghp_…</span>. This token (if present) is only kept in-memory and sent as an <span className="kbd">Authorization</span> header to the GitHub API.</p>
+              </details>
+            </div>
+          </div>
+        );
+      }
+
+      // Token handling for optional authentication (query param ?token=...)
+      (function enableAuth() {
+        const params = new URLSearchParams(location.search);
+        const token = params.get('token');
+        if (!token) return;
+        const _fetch = window.fetch;
+        window.fetch = function(input, init) {
+          init = init || {};
+          init.headers = Object.assign({}, init.headers || {}, token ? { Authorization: 'Bearer ' + token } : {});
+          return _fetch(input, init);
+        };
+      })();
+
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<App />);
+
+      // Manual theme mode override if user clicks the toggle
+      (function initTheme() {
+        const mode = localStorage.getItem('mode');
+        if (mode) document.documentElement.setAttribute('data-mode', mode);
+        const obs = new MutationObserver(function(){
+          const m = document.documentElement.getAttribute('data-mode');
+          if (m) localStorage.setItem('mode', m);
+        });
+        obs.observe(document.documentElement, { attributes: true });
+      })();
+
+      // --- Lightweight self-tests (non-invasive) ---
+      (function selfTests(){
+        try {
+          console.groupCollapsed('[Change Tracker] Self-tests');
+          // Existing tests (unchanged)
+          console.assert(classifyTags('Microsoft Defender ATP docs', 'repo')[0] === 'Defender', 'Tagging: Defender keyword');
+          console.assert(classifyTags('Azure Monitor guide', 'azure-docs').includes('Azure'), 'Tagging: Azure keyword');
+          console.assert(classifyTags('Random text', 'repo').length >= 1, 'Tagging: Fallback tag added');
+          const fd = formatDate(new Date().toISOString());
+          console.assert(typeof fd === 'string' && fd.length > 0, 'formatDate returns a string');
+
+          // New tests
+          console.assert(classifyTags('Updates to Microsoft 365 admin docs', 'repo').includes('Microsoft 365'), 'Tagging: Microsoft 365 keyword');
+          console.assert(safeGetRepoName('https://api.github.com/repos/MicrosoftDocs/azure-docs') === 'azure-docs', 'safeGetRepoName extracts last segment');
+          console.assert(safeGetRepoName(null) === '', 'safeGetRepoName handles null');
+          console.assert(stripApiPrefix('https://api.github.com/repos/MicrosoftDocs/azure-docs') === 'MicrosoftDocs/azure-docs', 'stripApiPrefix removes API prefix');
+          console.assert(stripApiPrefix(null) === 'MicrosoftDocs', 'stripApiPrefix fallback');
+          console.assert(safeUserLogin({ login: 'octocat' }) === 'octocat', 'safeUserLogin extracts login');
+          console.assert(safeUserLogin(null) === 'unknown', 'safeUserLogin fallback');
+
+          console.groupEnd();
+        } catch (e) {
+          console.warn('Self-tests encountered an error (non-fatal):', e);
+        }
+      })();
+    </script>
+  </body>
+</html>
