@@ -38,7 +38,14 @@ export function PRCard({ item }: { item: PRItem & { repoName: string } }) {
       <div className="flex items-center gap-2">
         <span className="rounded-full bg-slate-800/40 px-2 py-1 text-xs">{item.repoName}</span>
         <div className="grow" />
-        <Button asChild><a href={filesUrl} target="_blank" rel="noreferrer">View changed files →</a></Button>
+        <a
+  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 font-semibold text-slate-900 hover:border-sky-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+  href={filesUrl}
+  target="_blank"
+  rel="noreferrer"
+>
+  View changed files →
+</a>
       </div>
     </Card>
   )
