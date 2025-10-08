@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --border: 224 71% 4%;
+}
+
+.container { max-width: 1100px; }
