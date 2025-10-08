@@ -17,6 +17,7 @@
         --accent: #0ea5e9;
         --accent-weak: #e0f2fe;
         --tag-text: #000000;
+        --color: #000000;
       }
       [data-mode="dark"] {
         --bg: #0b1220;
@@ -28,6 +29,7 @@
         --accent: #38bdf8;
         --accent-weak: #50b6f6;
         --tag-text: #ffffff;
+        --color: white;
       }
       * { box-sizing: border-box; }
       html, body { height: 100%; }
@@ -54,7 +56,7 @@
       .btn:hover { border-color: var(--accent); }
       .btn[disabled] { opacity: .6; cursor: not-allowed; }
 
-      .chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--card); font-size: 12px; cursor: pointer; user-select: none; color: white; }
+      .chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--card); font-size: 12px; cursor: pointer; user-select: none; }
       .chip.active { border-color: var(--accent); background: var(--accent-weak); }
 
       .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 12px; }
@@ -199,7 +201,8 @@
           <div className="container">
             <header>
               <div>
-                <div className="title">MicrosoftDocs Change Tracker</div>
+                <div className="title">Marsh Security - MicrosoftDocs Change Tracker</div>
+                <div className="subtitle">Bought to you by <a href="https://marshsecurity.org">Marshsecurity.org</a></div>
                 <div className="subtitle">Merged PRs across <a href="https://github.com/orgs/MicrosoftDocs/repositories" target="_blank" rel="noreferrer">MicrosoftDocs</a> — filter by topic, search, and explore summaries.</div>
               </div>
               <div className="row">
