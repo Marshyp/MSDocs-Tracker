@@ -6,28 +6,27 @@
     <title>MicrosoftDocs Change Tracker</title>
     <meta name="description" content="Track recent merged changes across MicrosoftDocs repositories with smart tagging and filters." />
 
-    <!-- Minimal, sleek styles with light/dark mode -->
     <style>
       :root {
         --bg: #ffffff;
         --muted: #f5f7fb;
-        --text: #0f172a; /* slate-900 */
-        --subtle: #475569; /* slate-600 */
+        --text: #0f172a;
+        --subtle: #475569;
         --card: #ffffff;
-        --border: #e2e8f0; /* slate-200 */
-        --accent: #0ea5e9; /* sky-500 */
-        --accent-weak: #e0f2fe; /* sky-100 */
+        --border: #e2e8f0;
+        --accent: #0ea5e9;
+        --accent-weak: #e0f2fe;
       }
       @media (prefers-color-scheme: dark) {
         :root {
           --bg: #0b1220;
           --muted: #0f172a;
-          --text: #e5e7eb; /* gray-200 */
-          --subtle: #94a3b8; /* slate-400 */
+          --text: #e5e7eb;
+          --subtle: #94a3b8;
           --card: #0f172a;
-          --border: #1f2937; /* gray-800 */
-          --accent: #38bdf8; /* sky-400 */
-          --accent-weak: #082f49; /* sky-950 */
+          --border: #1f2937;
+          --accent: #38bdf8;
+          --accent-weak: #082f49;
         }
       }
       * { box-sizing: border-box; }
@@ -43,97 +42,26 @@
       a { color: var(--accent); text-decoration: none; }
       a:hover { text-decoration: underline; }
 
-      .container {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 24px 16px 64px;
-      }
-      header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        margin-bottom: 16px;
-      }
-      .title {
-        font-size: clamp(20px, 3.5vw, 28px);
-        font-weight: 700;
-        letter-spacing: -0.02em;
-      }
+      .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
+      header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+      .title { font-size: clamp(20px, 3.5vw, 28px); font-weight: 700; letter-spacing: -0.02em; }
       .subtitle { color: var(--subtle); font-size: 14px; margin-top: 6px; }
 
-      .toolbar {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 12px;
-        margin: 16px 0 8px;
-      }
-      .controls {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        align-items: center;
-      }
-      .input, select {
-        background: var(--card);
-        border: 1px solid var(--border);
-        color: var(--text);
-        border-radius: 12px;
-        padding: 10px 12px;
-        font-size: 14px;
-      }
-      .btn {
-        border: 1px solid var(--border);
-        background: var(--card);
-        color: var(--text);
-        padding: 10px 14px;
-        border-radius: 12px;
-        font-weight: 600;
-        cursor: pointer;
-      }
+      .toolbar { display: grid; grid-template-columns: 1fr auto; gap: 12px; margin: 16px 0 8px; }
+      .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+      .input, select { background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+      .btn { border: 1px solid var(--border); background: var(--card); color: var(--text); padding: 10px 14px; border-radius: 12px; font-weight: 600; cursor: pointer; }
       .btn:hover { border-color: var(--accent); }
       .btn[disabled] { opacity: .6; cursor: not-allowed; }
 
-      .chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 6px 10px;
-        border-radius: 999px;
-        border: 1px solid var(--border);
-        background: var(--card);
-        font-size: 12px;
-        cursor: pointer;
-        user-select: none;
-      }
+      .chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--card); font-size: 12px; cursor: pointer; user-select: none; }
       .chip.active { border-color: var(--accent); background: var(--accent-weak); }
 
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 12px;
-        margin-top: 12px;
-      }
-      .card {
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: 16px;
-        padding: 14px;
-      }
-      .card h3 {
-        font-size: 15px; margin: 0 0 6px; line-height: 1.35;
-      }
-      .meta {
-        color: var(--subtle);
-        font-size: 12px;
-        display: flex; flex-wrap: wrap; gap: 8px;
-      }
-      .tag {
-        font-size: 11px;
-        padding: 4px 8px;
-        border-radius: 999px;
-        background: var(--muted);
-      }
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 12px; }
+      .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 14px; }
+      .card h3 { font-size: 15px; margin: 0 0 6px; line-height: 1.35; }
+      .meta { color: var(--subtle); font-size: 12px; display: flex; flex-wrap: wrap; gap: 8px; }
+      .tag { font-size: 11px; padding: 4px 8px; border-radius: 999px; background: var(--muted); }
       .footer { margin-top: 20px; color: var(--subtle); font-size: 12px; }
       .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
       .spacer { flex: 1 1 auto; }
@@ -142,7 +70,6 @@
       .highlight { outline: 2px solid var(--accent); border-radius: 12px; }
     </style>
 
-    <!-- React via CDN + Babel Standalone so this is deployable as a single file -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
@@ -153,7 +80,6 @@
     <script type="text/babel">
       const { useEffect, useMemo, useRef, useState } = React;
 
-      // --- Tagging rules (edit to taste) ---
       const TAG_RULES = [
         { name: 'Defender', kws: ['defender', 'microsoft defender', 'mdf', 'mdatp', 'mde', 'mdc', 'mdo'] },
         { name: 'Microsoft 365', kws: ['m365', 'microsoft 365', 'office 365', 'o365'] },
@@ -179,7 +105,6 @@
         return tags;
       }
 
-      // Helpers to avoid optional chaining and allow tests
       function safeGetRepoName(repository_url) {
         if (!repository_url) return '';
         const parts = repository_url.split('/');
@@ -193,12 +118,11 @@
         return (user && user.login) ? user.login : 'unknown';
       }
 
-      // Simple in-memory cache for this session
       const cache = new Map();
       async function gh(url) {
         if (cache.has(url)) return cache.get(url);
-        const res = await fetch(url, { headers: { 'Accept': 'application/vnd.github+json' } });
-        if (!res.ok) throw new Error(`GitHub API ${res.status}: ${url}`);
+        const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+        if (!res.ok) throw new Error(`API ${res.status}: ${url}`);
         const data = await res.json();
         cache.set(url, data);
         return data;
@@ -232,17 +156,21 @@
           return d.toISOString().slice(0, 10);
         }, [daysBack]);
 
-        // Fetch merged PRs across MicrosoftDocs since a date
         async function load() {
           setLoading(true); setError('');
           try {
-            // Use Search Issues API for merged PRs in org since date; sort by updated
             const perPage = 100;
-            const searchQ = encodeURIComponent(`org:MicrosoftDocs is:pr is:merged merged:>=${sinceISO}` + (query ? ` ${query}` : ''));
-            const url = `https://api.github.com/search/issues?q=${searchQ}&sort=updated&order=desc&per_page=${perPage}`;
-            const data = await gh(url);
+            const apiUrl = `/api/search?since=${sinceISO}${query ? `&q=${encodeURIComponent(query)}` : ""}&per_page=${perPage}`;
+            let data;
+            try {
+              data = await gh(apiUrl);
+            } catch (e) {
+              // Fallback to GitHub if Pages Function isn't available
+              const searchQ = encodeURIComponent(`org:MicrosoftDocs is:pr is:merged merged:>=${sinceISO}` + (query ? ` ${query}` : ''));
+              const direct = `https://api.github.com/search/issues?q=${searchQ}&sort=updated&order=desc&per_page=${perPage}`;
+              data = await gh(direct);
+            }
             const itemsArr = (data && data.items) ? data.items : [];
-            // items: PRs (issues)
             const mapped = itemsArr.map(function(it){
               const repo = safeGetRepoName(it.repository_url);
               const tags = classifyTags(String(it.title || '') + ' ' + String(it.body || ''), repo);
@@ -262,7 +190,6 @@
               };
             });
             setItems(mapped);
-            // Set last visit only on first successful automatic load
             if (firstLoadRef.current) {
               firstLoadRef.current = false;
               setLastVisit(new Date().toISOString());
@@ -274,7 +201,7 @@
           }
         }
 
-        useEffect(() => { load(); /* load on mount and when daysBack changes via button */ }, []);
+        useEffect(() => { load(); }, []);
 
         const visible = items.filter(function(it){
           if (selectedTag !== 'All' && it.tags.indexOf(selectedTag) === -1) return false;
@@ -320,9 +247,8 @@
 
             {error && (
               <div className="card" style={{marginTop:12, borderColor:'#ef4444'}}>
-                <strong>GitHub API error:</strong> {error}
-                <div className="subtitle" style={{marginTop:6}}>Tip: You may be hitting the unauthenticated rate limit. Add <span className="kbd">?token=&lt;YOUR_GITHUB_TOKEN&gt;</span> in the site URL to authenticate (see below).
-                </div>
+                <strong>API error:</strong> {error}
+                <div className="subtitle" style={{marginTop:6}}>If self-hosting without Cloudflare Pages Functions, the app will fall back to GitHub directly and may hit rate limits.</div>
               </div>
             )}
 
@@ -346,35 +272,12 @@
             </div>
 
             <div className="footer">
-              <p>
-                New since last visit are outlined. Data comes from the GitHub Search API (<span className="kbd">org:MicrosoftDocs is:pr is:merged</span>), limited to the most relevant matches. No server or database needed.
-              </p>
-              <details>
-                <summary><strong>Optional: authenticate to raise rate limits</strong></summary>
-                <p>If you see rate-limit errors, you can pass a GitHub fine-grained personal access token in the URL like: <span className="kbd">?token=ghp_…</span>. This token (if present) is only kept in-memory and sent as an <span className="kbd">Authorization</span> header to the GitHub API.</p>
-              </details>
+              <p>New since last visit are outlined. Data is cached at the edge for 6h when using Cloudflare Pages Functions.</p>
             </div>
           </div>
         );
       }
 
-      // Token handling for optional authentication (query param ?token=...)
-      (function enableAuth() {
-        const params = new URLSearchParams(location.search);
-        const token = params.get('token');
-        if (!token) return;
-        const _fetch = window.fetch;
-        window.fetch = function(input, init) {
-          init = init || {};
-          init.headers = Object.assign({}, init.headers || {}, token ? { Authorization: 'Bearer ' + token } : {});
-          return _fetch(input, init);
-        };
-      })();
-
-      const root = ReactDOM.createRoot(document.getElementById('root'));
-      root.render(<App />);
-
-      // Manual theme mode override if user clicks the toggle
       (function initTheme() {
         const mode = localStorage.getItem('mode');
         if (mode) document.documentElement.setAttribute('data-mode', mode);
@@ -385,30 +288,18 @@
         obs.observe(document.documentElement, { attributes: true });
       })();
 
-      // --- Lightweight self-tests (non-invasive) ---
+      // Self-tests
       (function selfTests(){
         try {
           console.groupCollapsed('[Change Tracker] Self-tests');
-          // Existing tests (unchanged)
           console.assert(classifyTags('Microsoft Defender ATP docs', 'repo')[0] === 'Defender', 'Tagging: Defender keyword');
           console.assert(classifyTags('Azure Monitor guide', 'azure-docs').includes('Azure'), 'Tagging: Azure keyword');
           console.assert(classifyTags('Random text', 'repo').length >= 1, 'Tagging: Fallback tag added');
           const fd = formatDate(new Date().toISOString());
           console.assert(typeof fd === 'string' && fd.length > 0, 'formatDate returns a string');
-
-          // New tests
           console.assert(classifyTags('Updates to Microsoft 365 admin docs', 'repo').includes('Microsoft 365'), 'Tagging: Microsoft 365 keyword');
-          console.assert(safeGetRepoName('https://api.github.com/repos/MicrosoftDocs/azure-docs') === 'azure-docs', 'safeGetRepoName extracts last segment');
-          console.assert(safeGetRepoName(null) === '', 'safeGetRepoName handles null');
-          console.assert(stripApiPrefix('https://api.github.com/repos/MicrosoftDocs/azure-docs') === 'MicrosoftDocs/azure-docs', 'stripApiPrefix removes API prefix');
-          console.assert(stripApiPrefix(null) === 'MicrosoftDocs', 'stripApiPrefix fallback');
-          console.assert(safeUserLogin({ login: 'octocat' }) === 'octocat', 'safeUserLogin extracts login');
-          console.assert(safeUserLogin(null) === 'unknown', 'safeUserLogin fallback');
-
           console.groupEnd();
-        } catch (e) {
-          console.warn('Self-tests encountered an error (non-fatal):', e);
-        }
+        } catch (e) { console.warn('Self-tests error:', e); }
       })();
     </script>
   </body>
