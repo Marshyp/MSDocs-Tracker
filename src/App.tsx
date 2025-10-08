@@ -42,16 +42,26 @@ export default function App() {
 
   return (
     <div className="container mx-auto px-4 py-6">
-      <header className="mb-4 flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">MicrosoftDocs Change Tracker</h1>
-          <p className="mt-1 text-sm text-slate-400">Bought to you by <a href="https://marshsecurity.org/">Marsh Security</a></p>
-          <p className="mt-1 text-sm text-slate-400">
-            Pick a repository, then browse recently merged PRs. Fast, minimal, and cached on Cloudflare.
-          </p>
-        </div>
-        <ThemeToggle />
-      </header>
+    <header className="mb-4 flex items-center justify-between gap-4">
+    <div>
+        <h1 className="text-2xl font-bold tracking-tight">MicrosoftDocs Change Tracker</h1>
+
+        <p className="mt-1 text-sm">
+        <span className="opacity-80">Brought to you by </span>
+        <a
+            href="https://marshsecurity.org/"
+            target="_blank"
+            className="font-medium text-sky-600 hover:underline dark:text-sky-400"
+        >
+            Marsh Security
+        </a>
+        </p>
+        <p className="mt-1 text-sm text-slate-400">
+        Pick a repository, then browse recently merged PRs. Fast, minimal, and cached on Cloudflare.
+        </p>
+    </div>
+    <ThemeToggle />
+    </header>
 
       <div className="mb-2 flex flex-wrap items-center gap-3">
         <RepoPicker value={repo} onChange={setRepo} />
@@ -93,6 +103,18 @@ export default function App() {
           <PRCard key={it.id} item={it} />
         ))}
       </div>
+
+    <footer className="mt-8 text-sm text-slate-400">
+    Follow my Security blog:{' '}
+    <a
+        href="https://marshsecurity.org/"
+        target="_blank"
+        className="text-sky-600 hover:underline dark:text-sky-400"
+    >
+        Marsh Security
+    </a>
+    </footer>
+
     </div>
   )
 }
