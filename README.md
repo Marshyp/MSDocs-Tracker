@@ -30,6 +30,3 @@ You can also deploy without GitHub: Create a new Pages project → **Direct Uplo
 - Adjust tag rules in `TAG_RULES` at the top of the script.
 - Change the default lookback window by editing the `daysBack` initial value in `usePersistedState`.
 - The query string search box applies to PR titles and bodies.
-
-## Notes
-- This tool surfaces **merged PRs** only. If you want to *also* include direct commits to default branches (outside PRs), say the word and we can expand the fetch logic.
