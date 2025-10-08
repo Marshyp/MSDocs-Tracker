@@ -17,10 +17,8 @@ npm run dev
 Push to `main`. The included GitHub Action builds to `dist/` and deploys to Cloudflare Pages.
 Add secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`. Optionally set Pages env var `GITHUB_TOKEN`.
 
-## Note on shadcn/ui
-These UI primitives mimic shadcn’s API without running the CLI, so you can drop-in replace them later by running:
-```bash
-npx shadcn@latest init
-npx shadcn@latest add button input select card badge
-```
-Then swap imports to `@/components/ui/*` (same paths used here).
+## RSS Feeds
+Each repository has an RSS feed of merged PRs:
+`/api/rss?repo=<owner>/<repo>&days=14[&q=extra+query]`
+All items link directly to the PR “Files” tab.
+

@@ -12,6 +12,18 @@ export default function App() {
   const [items, setItems] = React.useState<(PRItem & { repoName: string })[]>([])
   const [error, setError] = React.useState<string>('')
 
+    // RSS Feed
+const rssUrl = React.useMemo(() => {
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const params = new URLSearchParams({
+    repo,
+    days: String(daysBack),
+  });
+  if (query) params.set('q', query);
+  return `${origin}/api/rss?${params.toString()}`;
+}, [repo, daysBack, query]);
+
+
   const sinceISO = React.useMemo(() => {
     const d = new Date()
     d.setDate(d.getDate() - (daysBack || 14))
@@ -87,9 +99,25 @@ export default function App() {
         >
           {loading ? 'Loading…' : 'Refresh'}
         </button>
-        <div className="ml-auto text-xs text-slate-400">
-          Showing <code className="rounded bg-slate-800/20 px-1 py-[2px]">repo:{repo} merged:&gt;={sinceISO}</code>
-        </div>
+        <div className="ml-auto flex items-center gap-3 text-xs text-slate-400">
+        <span>
+          Showing <code className="rounded bg-slate-800/20 px-1 py-[2px]">
+            repo:{repo} merged:&gt;={sinceISO}
+          </code>
+        </span>
+
+        <a
+          className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-2
+                    font-semibold text-slate-900 hover:border-sky-400
+                    dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          href={rssUrl}
+          target="_blank"
+          rel="noreferrer"
+          title="Subscribe to this repository's merged PRs (files) as RSS"
+        >
+          RSS Feed
+        </a>
+      </div>
       </div>
 
       {error && (
