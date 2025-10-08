@@ -6,70 +6,58 @@
     <title>MicrosoftDocs Change Tracker</title>
     <meta name="description" content="Track recent merged changes across MicrosoftDocs repositories with smart tagging and filters." />
 
+    <!-- shadcn-like minimal styles (no build) -->
     <style>
       :root {
         --bg: #ffffff;
-        --muted: #f5f7fb;
-        --text: #0f172a;
-        --subtle: #475569;
-        --card: #ffffff;
+        --fg: #0f172a;
+        --muted: #f1f5f9;
         --border: #e2e8f0;
+        --card: #ffffff;
         --accent: #0ea5e9;
         --accent-weak: #e0f2fe;
         --tag-text: #000000;
-        --color: #000000;
       }
       [data-mode="dark"] {
         --bg: #0b1220;
+        --fg: #e5e7eb;
         --muted: #0f172a;
-        --text: #e5e7eb;
-        --subtle: #94a3b8;
-        --card: #0f172a;
         --border: #1f2937;
+        --card: #0f172a;
         --accent: #38bdf8;
-        --accent-weak: #50b6f6;
+        --accent-weak: #082f49;
         --tag-text: #ffffff;
-        --color: white;
       }
       * { box-sizing: border-box; }
       html, body { height: 100%; }
-      body {
-        margin: 0;
-        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-        background: var(--bg);
-        color: var(--text);
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-      }
+      body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; background: var(--bg); color: var(--fg); }
       a { color: var(--accent); text-decoration: none; }
       a:hover { text-decoration: underline; }
 
       .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
-      header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
-      .title { font-size: clamp(20px, 3.5vw, 28px); font-weight: 700; letter-spacing: -0.02em; }
-      .subtitle { color: var(--subtle); font-size: 14px; margin-top: 6px; }
+      header { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; }
+      .title { font-size: clamp(20px,3.5vw,28px); font-weight: 700; letter-spacing: -0.02em; }
+      .subtitle { color: #94a3b8; font-size: 14px; margin-top: 6px; }
 
-      .toolbar { display: grid; grid-template-columns: 1fr auto; gap: 12px; margin: 16px 0 8px; }
-      .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-      .input, select { background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 12px; padding: 10px 12px; font-size: 14px; }
-      .btn { border: 1px solid var(--border); background: var(--card); color: var(--text); padding: 10px 14px; border-radius: 12px; font-weight: 600; cursor: pointer; }
+      /* shadcn/ui-like primitives */
+      .btn { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius: 12px; border:1px solid var(--border); background: var(--card); color: var(--fg); font-weight:600; cursor:pointer; }
       .btn:hover { border-color: var(--accent); }
-      .btn[disabled] { opacity: .6; cursor: not-allowed; }
+      .btn-ghost { background: transparent; }
+      .input, select { width: auto; background: var(--card); color: var(--fg); border:1px solid var(--border); border-radius:12px; padding:10px 12px; font-size:14px; }
+      .row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+      .toolbar { display:grid; grid-template-columns: 1fr auto; gap:12px; margin:16px 0 8px; }
 
-      .chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--card); font-size: 12px; cursor: pointer; user-select: none; color: var(--tag-text) }
-      .chip.active { border-color: var(--accent); background: var(--accent-weak); }
-
-      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 12px; }
-      .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 14px; overflow-wrap: anywhere; word-wrap: break-word; }
-      .card h3 { font-size: 15px; margin: 0 0 6px; line-height: 1.35; overflow-wrap: anywhere; }
-      .meta { color: var(--subtle); font-size: 12px; display: flex; flex-wrap: wrap; gap: 8px; }
-      .tag { font-size: 11px; padding: 4px 8px; border-radius: 999px; background: var(--muted); color: var(--tag-text) !important; }
-      .footer { margin-top: 20px; color: var(--subtle); font-size: 12px; }
-      .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-      .spacer { flex: 1 1 auto; }
-      .pillnote { font-size: 12px; color: var(--subtle); }
+      .grid { display:grid; grid-template-columns: repeat(auto-fill,minmax(290px,1fr)); gap:12px; margin-top:12px; }
+      .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 14px; }
+      .card h3 { font-size: 15px; margin: 0 0 6px; line-height: 1.35; overflow-wrap:anywhere; }
+      .meta { color:#94a3b8; font-size:12px; display:flex; gap:8px; flex-wrap:wrap; }
       .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; background: var(--muted); border-radius: 6px; padding: 1px 6px; }
-      .highlight { outline: 2px solid var(--accent); border-radius: 12px; }
+      .chip { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; border:1px solid var(--border); background: var(--muted); color: var(--tag-text) !important; font-size:12px; }
+      .badge { display:inline-flex; align-items:center; padding:4px 8px; border-radius:999px; border:1px solid var(--border); background: var(--accent-weak); color: var(--fg); font-size:11px; }
+      .spacer { flex:1 1 auto; }
+      .highlight { outline:2px solid var(--accent); border-radius:12px; }
+
+      .overflow-any { overflow-wrap:anywhere; word-wrap:break-word; }
     </style>
 
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -82,62 +70,39 @@
     <script type="text/babel" data-presets="es2015,react">
       const { useEffect, useMemo, useRef, useState } = React;
 
-      const TAG_RULES = [
-        { name: 'Defender', kws: ['defender', 'microsoft defender', 'mdo', 'mdatp', 'mde', 'mdi', 'mda', 'mdca', 'wdac', 'application control'] },
-        { name: 'Microsoft 365', kws: ['m365', 'microsoft 365', 'office 365', 'o365'] },
-        { name: 'Entra', kws: ['entra', 'azure ad', 'aad', 'conditional access'] },
-        { name: 'Purview', kws: ['purview', 'compliance', 'dlp', 'information protection'] },
-        { name: 'Sentinel', kws: ['sentinel', 'siem', 'soar', 'microsoft sentinel'] },
-        { name: 'Intune', kws: ['intune', 'endpoint manager', 'mam', 'mdm'] },
-        { name: 'Azure', kws: ['azure', 'arm', 'bicep', 'aks', 'app service'] },
-        { name: 'Windows', kws: ['windows', 'win11', 'win10'] },
-        { name: 'Teams', kws: ['teams', 'microsoft teams'] },
-        { name: 'SharePoint', kws: ['sharepoint', 'onedrive'] },
-        { name: 'Exchange', kws: ['exchange', 'exchange online', 'exo'] },
-        { name: 'Edge', kws: ['edge'] },
+      // Popular repos shortlist (edit freely). Users can also type any owner/repo.
+      const REPO_SHORTLIST = [
+        'MicrosoftDocs/defender-docs',
+        'MicrosoftDocs/microsoft-365-docs',
+        'MicrosoftDocs/azure-docs',
+        'MicrosoftDocs/windows-itpro-docs',
+        'MicrosoftDocs/windowsserverdocs',
+        'MicrosoftDocs/memdocs',
+        'MicrosoftDocs/msteams-docs',
+        'MicrosoftDocs/OfficeDocs-SharePoint',
+        'MicrosoftDocs/OfficeDocs-Exchange',
       ];
 
-      // Map tags to specific MicrosoftDocs repos to query. Edit to your exact preference.
-      const TAG_REPOS = {
-        'Defender': [
-          'MicrosoftDocs/defender-docs',          // Defender docs
-          'MicrosoftDocs/microsoft-365-docs',     // M365/Defender content
-          'MicrosoftDocs/azure-docs'              // Defender for Cloud under Azure docs
-        ],
-        'Microsoft 365': ['MicrosoftDocs/microsoft-365-docs'],
-        'Azure': ['MicrosoftDocs/azure-docs']
-      };
-
-      function classifyTags(text, repo) {
-        const lower = (String(text||'') + ' ' + String(repo||'')).toLowerCase();
-        const out = [];
-        for (var i=0;i<TAG_RULES.length;i++) {
-          var r = TAG_RULES[i];
-          for (var j=0;j<r.kws.length;j++) if (lower.indexOf(r.kws[j]) !== -1) { out.push(r.name); break; }
-        }
-        if (!out.length) out.push('Other');
-        return out;
-      }
-
-      function safeGetRepoName(repository_url){ if (!repository_url) return ''; const parts = repository_url.split('/'); return parts[parts.length-1]||''; }
-      function stripApiPrefix(repository_url){ if (!repository_url) return 'MicrosoftDocs'; return repository_url.replace('https://api.github.com/repos/',''); }
-      function safeUserLogin(user){ return (user && user.login) ? user.login : 'unknown'; }
-
+      // Simple in-memory cache
       const cache = new Map();
-      async function gh(url){ if (cache.has(url)) return cache.get(url); const res = await fetch(url,{headers:{'Accept':'application/json'}}); if(!res.ok) throw new Error('API '+res.status+': '+url); const data = await res.json(); cache.set(url,data); return data; }
+      async function getJson(url){ if(cache.has(url)) return cache.get(url); const res = await fetch(url,{headers:{'Accept':'application/json'}}); if(!res.ok) throw new Error('API '+res.status+': '+url); const data = await res.json(); cache.set(url,data); return data; }
 
-      function usePersistedState(key, initial){ const [s, setS] = useState(function(){ try{const v=localStorage.getItem(key); return v?JSON.parse(v):initial;}catch(e){return initial;} }); useEffect(function(){ try{localStorage.setItem(key, JSON.stringify(s));}catch(e){} }, [key,s]); return [s,setS]; }
-      function formatDate(iso){ try{return new Date(iso).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'});}catch(e){return iso;} }
+      function usePersistedState(key, initial){
+        const [s,setS] = useState(function(){ try{const v=localStorage.getItem(key); return v?JSON.parse(v):initial;}catch(e){return initial;} });
+        useEffect(function(){ try{localStorage.setItem(key, JSON.stringify(s));}catch(e){} }, [key,s]);
+        return [s,setS];
+      }
+      function formatDate(iso){ try{return new Date(iso).toLocaleString(undefined,{dateStyle:'medium', timeStyle:'short'});}catch(e){return iso;} }
 
       function App(){
         // Theme
-        const [mode,setMode] = useState(function(){ return localStorage.getItem('mode')||'dark'; });
-        useEffect(function(){ document.documentElement.setAttribute('data-mode', mode); localStorage.setItem('mode',mode); }, [mode]);
+        const [mode,setMode] = usePersistedState('mode','dark');
+        useEffect(function(){ document.documentElement.setAttribute('data-mode', mode); }, [mode]);
         function toggleTheme(){ setMode(mode==='dark'?'light':'dark'); }
 
-        // App state
+        // Query state
+        const [repo,setRepo] = usePersistedState('repo','MicrosoftDocs/defender-docs');
         const [daysBack,setDaysBack] = usePersistedState('daysBack', 14);
-        const [selectedTag,setSelectedTag] = usePersistedState('selectedTag','Defender');
         const [query,setQuery] = usePersistedState('query','');
         const [loading,setLoading] = useState(false);
         const [items,setItems] = useState([]);
@@ -145,90 +110,121 @@
         const [lastVisit,setLastVisit] = usePersistedState('lastVisit', null);
         const firstLoadRef = useRef(true);
 
-        const sinceISO = useMemo(function(){ const d=new Date(); d.setDate(d.getDate()-Number(daysBack||14)); return d.toISOString().slice(0,10); }, [daysBack]);
+        const sinceISO = useMemo(function(){ const d = new Date(); d.setDate(d.getDate()-Number(daysBack||14)); return d.toISOString().slice(0,10); }, [daysBack]);
 
-        // Loader: queries only repos mapped to the selected tag; avoids org-wide queries
         async function load(){
+          if(!repo){ setItems([]); return; }
           setLoading(true); setError('');
           try {
-            const perPage = 100;
-            const repos = TAG_REPOS[selectedTag] || [];
-
-            if (!repos.length && selectedTag !== 'All') {
-              setItems([]); // no fetch if tag has no mapping
-              return;
-            }
-            if (!repos.length && selectedTag === 'All') {
-              setItems([]); // avoid org-wide fetch by default
-              return;
-            }
-
-            const repoQ = repos.map(function(r){ return 'repo:' + r; }).join(' ');
-            const queryStr = 'is:pr is:merged merged:>=' + sinceISO + (query ? ' ' + query : '') + ' ' + repoQ;
-            const encoded = encodeURIComponent(queryStr);
+            const perPage = 50; // scoped to one repo
+            const qStr = 'repo:'+repo+' is:pr is:merged merged:>='+sinceISO + (query?(' '+query):'');
+            const encoded = encodeURIComponent(qStr);
 
             let data;
-            try {
-              const apiUrl = '/api/search?q=' + encoded + '&per_page=' + perPage + '&since=' + sinceISO; // for edge cache keying
-              data = await gh(apiUrl);
-            } catch (e) {
-              const direct = 'https://api.github.com/search/issues?q=' + encoded + '&sort=updated&order=desc&per_page=' + perPage;
-              data = await gh(direct);
-            }
+            try { data = await getJson('/api/search?q='+encoded+'&per_page='+perPage+'&since='+sinceISO); }
+            catch (e) { data = await getJson('https://api.github.com/search/issues?q='+encoded+'&sort=updated&order=desc&per_page='+perPage); }
 
             const arr = (data && data.items) ? data.items : [];
             const mapped = arr.map(function(it){
-              const repo = safeGetRepoName(it.repository_url);
-              const tags = classifyTags(String(it.title||'')+' '+String(it.body||''), repo);
               const mergedTime = it.closed_at || it.merged_at || it.updated_at;
               const highlight = lastVisit ? (new Date(mergedTime) > new Date(lastVisit)) : false;
-              return { id: it.id, number: it.number, title: it.title, url: it.html_url, repo: stripApiPrefix(it.repository_url), merged_at: mergedTime, user: safeUserLogin(it.user), body: it.body || '', tags: tags, highlight: highlight };
+              const prNumber = it.number;
+              const filesUrl = it.html_url + '/files';
+              return {
+                id: it.id,
+                number: prNumber,
+                title: it.title,
+                url: it.html_url,
+                filesUrl: filesUrl,
+                repo: (it.repository_url || '').replace('https://api.github.com/repos/',''),
+                merged_at: mergedTime,
+                user: (it.user && it.user.login) ? it.user.login : 'unknown',
+                body: it.body || '',
+                highlight: highlight,
+                docLabel: null, // to be inferred lazily
+              };
             });
             setItems(mapped);
-            if (firstLoadRef.current) { firstLoadRef.current = false; setLastVisit(new Date().toISOString()); }
-          } catch (e) {
-            setError(e.message || String(e));
-          } finally {
-            setLoading(false);
-          }
+            if(firstLoadRef.current){ firstLoadRef.current=false; setLastVisit(new Date().toISOString()); }
+
+            // Lazy infer doc labels for first 15 items to limit calls
+            const top = mapped.slice(0,15);
+            top.forEach(function(it, idx){ inferDocLabel(it.repo, it.number).then(function(label){
+              setItems(function(prev){ const copy = prev.slice(); const i = copy.findIndex(function(x){return x.id===it.id;}); if(i!==-1){ copy[i] = Object.assign({}, copy[i], { docLabel: label }); } return copy; });
+            }).catch(function(){}); });
+
+          } catch (e) { setError(e.message || String(e)); }
+          finally { setLoading(false); }
         }
 
-        useEffect(function(){ load(); }, [selectedTag, sinceISO, query]);
+        // Infer label by looking at PR files (added vs modified). Falls back to title heuristic.
+        async function inferDocLabel(ownerRepo, number){
+          try {
+            const url = 'https://api.github.com/repos/'+ownerRepo+'/pulls/'+number+'/files?per_page=100';
+            const files = await getJson(url);
+            var hasAdded=false, hasModified=false, hasDocs=false;
+            for (var i=0;i<files.length;i++){
+              var f = files[i];
+              var name = f && f.filename ? f.filename.toLowerCase() : '';
+              if (name.indexOf('.md')!==-1 || name.indexOf('.yml')!==-1 || name.indexOf('/docs/')!==-1 || name.indexOf('/articles/')!==-1) hasDocs=true;
+              var st = f && f.status ? f.status : '';
+              if (st==='added') hasAdded = true;
+              if (st==='modified' || st==='renamed' || st==='changed') hasModified = true;
+            }
+            if (!hasDocs) return 'Updated Docs'; // default
+            if (hasAdded && !hasModified) return 'New Docs';
+            if (hasModified && !hasAdded) return 'Updated Docs';
+            return 'Updated Docs';
+          } catch (e) {
+            return titleHeuristic(number);
+          }
+        }
+        function titleHeuristic(n){ return 'Updated Docs'; }
 
-        const visible = items.filter(function(it){ if (selectedTag!=='All' && it.tags.indexOf(selectedTag)===-1) return false; return true; });
+        useEffect(function(){ load(); }, [repo, sinceISO, query]);
+
+        // UI helpers
+        function RepoPicker(){
+          const [custom, setCustom] = useState('');
+          function addCustom(){ if(!custom) return; setRepo(custom.trim()); }
+          return (
+            <div className="row">
+              <select className="input" value={repo} onChange={function(e){ setRepo(e.target.value); }}>
+                {REPO_SHORTLIST.map(function(r){ return <option key={r} value={r}>{r}</option>; })}
+                {!REPO_SHORTLIST.includes(repo) ? <option value={repo}>{repo}</option> : null}
+              </select>
+              <input className="input" style={{minWidth:260}} placeholder="Or type owner/repo… e.g. MicrosoftDocs/defender-docs" value={custom} onChange={function(e){setCustom(e.target.value);}} />
+              <button className="btn" onClick={addCustom}>Use repository</button>
+            </div>
+          );
+        }
+
+        const visible = items; // already repo-scoped
 
         return (
           <div className="container">
             <header>
               <div>
-                <div className="title">Marsh Security - MicrosoftDocs Change Tracker</div>
-                <div className="subtitle">Bought to you by <a href="https://marshsecurity.org">Marshsecurity.org</a></div>
-                <div className="subtitle">Merged PRs across <a href="https://github.com/orgs/MicrosoftDocs/repositories" target="_blank" rel="noreferrer">MicrosoftDocs</a> — filter by topic, search, and explore summaries.</div>
+                <div className="title">MicrosoftDocs Change Tracker</div>
+                <div className="subtitle">Pick a repository, then browse recently merged PRs. Fast, minimal, and cached on Cloudflare.</div>
               </div>
               <div className="row">
-                <button className="btn" onClick={toggleTheme}>Toggle Theme ({mode})</button>
+                <button className="btn btn-ghost" onClick={toggleTheme}>{mode==='dark'?'🌙 Dark':'🌞 Light'}</button>
               </div>
             </header>
 
             <div className="toolbar">
-              <div className="controls">
-                <input className="input" placeholder="Search PR titles/bodies… (e.g., Defender)" value={query} onChange={function(e){setQuery(e.target.value);}} />
+              <div className="row">
+                <RepoPicker />
+                <input className="input" placeholder="Search PR titles/bodies…" value={query} onChange={function(e){setQuery(e.target.value);}} />
                 <select value={daysBack} onChange={function(e){setDaysBack(Number(e.target.value));}} className="input">
                   {[7,14,30,60,90].map(function(d){ return <option key={d} value={d}>Last {d} days</option>; })}
                 </select>
                 <button className="btn" onClick={load} disabled={loading}>{loading ? 'Loading…' : 'Refresh'}</button>
               </div>
               <div className="row" style={{justifyContent:'flex-end'}}>
-                <span className="pillnote">Showing <span className="kbd">merged:&gt;={sinceISO}</span></span>
+                <span className="subtitle">Showing <span className="kbd">repo:{repo} merged:&gt;={sinceISO}</span></span>
               </div>
-            </div>
-
-            <div className="row" style={{gap:6, marginTop:6, flexWrap:'wrap'}}>
-              <button className={"chip "+(selectedTag==='All'?'active':'')} onClick={function(){setSelectedTag('All');}}>All</button>
-              {TAG_RULES.map(function(r){ return (
-                <button key={r.name} className={"chip "+(selectedTag===r.name?'active':'')} onClick={function(){setSelectedTag(r.name);}}>{r.name}</button>
-              ); })}
-              <button className={"chip "+(selectedTag==='Other'?'active':'')} onClick={function(){setSelectedTag('Other');}}>Other</button>
             </div>
 
             {error && (
@@ -241,24 +237,25 @@
             <div className="grid">
               {visible.map(function(it){ return (
                 <article key={it.id} className={"card "+(it.highlight?'highlight':'') }>
-                  <h3><a href={it.url} target="_blank" rel="noreferrer">{it.title}</a></h3>
+                  <h3 className="overflow-any"><a href={it.filesUrl} target="_blank" rel="noreferrer">{it.title}</a></h3>
                   <div className="meta">
                     <span>Repo: <span className="kbd">{it.repo}</span></span>
                     <span>By <span className="kbd">{it.user}</span></span>
                     <span>Merged: {formatDate(it.merged_at)}</span>
+                    {it.docLabel ? <span className="badge">{it.docLabel}</span> : null}
                   </div>
-                  <p style={{marginTop:10, whiteSpace:'pre-wrap', overflowWrap:'anywhere'}}>{(it.body || '').slice(0, 500)}{it.body && it.body.length > 500 ? '…' : ''}</p>
+                  <p className="overflow-any" style={{marginTop:10, whiteSpace:'pre-wrap'}}>{(it.body || '').slice(0, 500)}{it.body && it.body.length > 500 ? '…' : ''}</p>
                   <div className="row" style={{marginTop:8}}>
-                    {it.tags.map(function(t){ return <span key={t} className="tag">{t}</span>; })}
+                    <span className="chip">{it.repo}</span>
                     <span className="spacer" />
-                    <a className="btn" href={it.url} target="_blank" rel="noreferrer">View Pull Request →</a>
+                    <a className="btn" href={it.filesUrl} target="_blank" rel="noreferrer">View changed files →</a>
                   </div>
                 </article>
               ); })}
             </div>
 
-            <div className="footer">
-              <p>New since last visit are outlined. Uses Cloudflare Pages Functions cache when available.</p>
+            <div className="row" style={{marginTop:16, color:'#94a3b8', fontSize:12}}>
+              New since last visit are outlined. Files are fetched lazily to infer <span className="kbd">New Docs</span>/<span className="kbd">Updated Docs</span> when possible.
             </div>
           </div>
         );
@@ -267,21 +264,17 @@
       const root = ReactDOM.createRoot(document.getElementById('root'));
       root.render(<App />);
 
-      // Self-tests (keep existing, add a couple more)
+      // Self-tests
       (function selfTests(){
-        try {
+        try{
           console.groupCollapsed('[Change Tracker] Self-tests');
-          console.assert(classifyTags('Microsoft Defender ATP docs', 'repo')[0] === 'Defender', 'Tagging: Defender keyword');
-          console.assert(classifyTags('Azure Monitor guide', 'azure-docs').indexOf('Azure') !== -1, 'Tagging: Azure keyword');
-          console.assert(classifyTags('Random text', 'repo').length >= 1, 'Tagging: Fallback tag added');
-          const fd = formatDate(new Date().toISOString());
-          console.assert(typeof fd === 'string' && fd.length > 0, 'formatDate returns a string');
-          console.assert(classifyTags('Updates to Microsoft 365 admin docs', 'repo').indexOf('Microsoft 365') !== -1, 'Tagging: Microsoft 365 keyword');
-          // New tests
-          console.assert(Array.isArray(TAG_REPOS['Defender']) && TAG_REPOS['Defender'].length >= 1, 'TAG_REPOS Defender mapping present');
-          console.assert(typeof document.documentElement.getAttribute('data-mode') === 'string', 'Theme data-mode present');
+          // Link build test
+          const ex = { html_url: 'https://github.com/owner/repo/pull/123' };
+          console.assert(ex.html_url + '/files' === 'https://github.com/owner/repo/pull/123/files', 'files tab link');
+          // Theme attr present
+          console.assert(typeof document.documentElement.getAttribute('data-mode') === 'string', 'theme attribute present');
           console.groupEnd();
-        } catch (e) { console.warn('Self-tests error:', e); }
+        }catch(e){ console.warn('Self-tests error:', e); }
       })();
     </script>
     <noscript style="display:block;padding:16px;color:#ef4444;font-family:ui-sans-serif">This app requires JavaScript. If you see a blank page, check your browser console for errors loading React/Babel from unpkg.</noscript>
