@@ -23,9 +23,6 @@ Open `index.html` in any modern browser. If you hit GitHub rate limits (60 unaut
 4. Push to `main`. The workflow will publish the root directory to Cloudflare Pages.
 5. (Optional) In Cloudflare Pages, connect a custom domain for the project.
 
-## Alternate deploy (Dashboard → Direct Upload)
-You can also deploy without GitHub: Create a new Pages project → **Direct Upload** → upload `index.html`.
-
 ## Configuration
 - Adjust tag rules in `TAG_RULES` at the top of the script.
 - Change the default lookback window by editing the `daysBack` initial value in `usePersistedState`.
