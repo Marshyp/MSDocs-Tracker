@@ -2,7 +2,6 @@ import React from 'react'
 import { searchReposInOrg } from '@/lib/github'
 import { Input } from './ui/input'
 import { Select } from './ui/select'
-import { Button } from './ui/button'
 
 const DEFAULTS = [
   'MicrosoftDocs/defender-docs',
@@ -35,17 +34,33 @@ export function RepoPicker({ value, onChange }:{ value: string, onChange: (v:str
     }, 250)
   }
 
+  function applyTyped() {
+    const trimmed = text.trim()
+    if (trimmed) onChange(trimmed)
+  }
+
   return (
     <div className="relative w-[420px]">
       <div className="flex gap-2">
-        <Select value={value} onChange={e=>onChange(e.target.value)}>
+        {/* Selecting from the list applies immediately */}
+        <Select value={value} onChange={e => onChange(e.target.value)}>
           {results.map(r => <option key={r} value={r}>{r}</option>)}
           {!results.includes(value) && <option value={value}>{value}</option>}
         </Select>
-        <Input placeholder="Type to search… e.g. msteams-docs" value={text} onChange={e => { setText(e.target.value); schedule(e.target.value) }} />
-        <Button onClick={() => onChange(text.trim())} disabled={!text.trim()}>Use</Button>
+
+        {/* Typing: hit Enter to apply */}
+        <Input
+          placeholder="Type owner/repo… e.g. MicrosoftDocs/defender-docs"
+          value={text}
+          onChange={e => { setText(e.target.value); schedule(e.target.value) }}
+          onKeyDown={e => { if (e.key === 'Enter') applyTyped() }}
+          aria-label="Repository"
+        />
       </div>
-      {loading && <div className="absolute right-2 top-2 text-xs text-slate-400">searching…</div>}
+
+      {loading && (
+        <div className="absolute right-2 top-2 text-xs text-slate-400">searching…</div>
+      )}
     </div>
   )
 }
