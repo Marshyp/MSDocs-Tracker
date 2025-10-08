@@ -45,7 +45,7 @@ export default function App() {
       <header className="mb-4 flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">MicrosoftDocs Change Tracker</h1>
-          <h2 className="text-2xl font-bold tracking-tight">Bought to you by <a href="https://marshsecurity.org/">Marsh Security</a></h2>
+          <p className="mt-1 text-sm text-slate-400">Bought to you by <span style="color:#90D5FF"><a href="https://marshsecurity.org/">Marsh Security</a></span></p>
           <p className="mt-1 text-sm text-slate-400">
             Pick a repository, then browse recently merged PRs. Fast, minimal, and cached on Cloudflare.
           </p>
