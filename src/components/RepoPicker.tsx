@@ -1,8 +1,7 @@
 import React from 'react'
-import { searchReposInOrg } from '@/lib/github'
 import { Select } from './ui/select'
 
-const DEFAULTS = [
+const OPTIONS = [
   'MicrosoftDocs/defender-docs',
   'MicrosoftDocs/microsoft-365-docs',
   'MicrosoftDocs/azure-docs',
@@ -10,6 +9,10 @@ const DEFAULTS = [
   'MicrosoftDocs/windows-itpro-docs',
   'MicrosoftDocs/windowsserverdocs',
   'MicrosoftDocs/memdocs',
+  'MicrosoftDocs/azure-docs-cli',
+  'MicrosoftDocs/win32',
+  'MicrosoftDocs/edge-developer',
+  // add any other frequent repos here
 ]
 
 export function RepoPicker({
@@ -19,57 +22,23 @@ export function RepoPicker({
   value: string
   onChange: (v: string) => void
 }) {
-  const [results, setResults] = React.useState<string[]>(DEFAULTS)
-  const [loading, setLoading] = React.useState(false)
-  const [search, setSearch] = React.useState('')
-  const timer = React.useRef<number | null>(null)
-
-  // Debounced search for repositories within MicrosoftDocs org
-  function scheduleSearch(q: string) {
-    setSearch(q)
-    if (timer.current) window.clearTimeout(timer.current)
-    timer.current = window.setTimeout(async () => {
-      if (!q) {
-        setResults(DEFAULTS)
-        return
-      }
-      try {
-        setLoading(true)
-        const res = await searchReposInOrg('MicrosoftDocs', q, 10)
-        const names = res.items.map((it) => it.full_name)
-        setResults(names.length ? names : DEFAULTS)
-      } catch {
-        setResults(DEFAULTS)
-      } finally {
-        setLoading(false)
-      }
-    }, 300)
-  }
+  const options = React.useMemo(() => OPTIONS, [])
 
   return (
-    <div className="relative flex items-center justify-start gap-3">
-      <div className="w-[340px]">
-        <Select
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onInput={(e) => scheduleSearch((e.target as HTMLSelectElement).value)}
-          aria-label="Select repository"
-          className="text-sm"
-        >
-          {results.map((r) => (
-            <option key={r} value={r}>
-              {r}
-            </option>
-          ))}
-          {!results.includes(value) && <option value={value}>{value}</option>}
-        </Select>
-      </div>
-
-      {loading && (
-        <div className="absolute right-2 top-2 text-xs text-slate-400">
-          searching…
-        </div>
-      )}
+    <div className="w-[340px]">
+      <Select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        aria-label="Select repository"
+        className="text-sm"
+      >
+        {options.map((r) => (
+          <option key={r} value={r}>
+            {r}
+          </option>
+        ))}
+        {!options.includes(value) && <option value={value}>{value}</option>}
+      </Select>
     </div>
   )
 }
