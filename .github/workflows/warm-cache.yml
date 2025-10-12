@@ -24,32 +24,31 @@ jobs:
         days: [7, 14]  # warm multiple lookback windows (optional)
 
     env:
-      BASE: https://docstracker.marshsecurity.org
+      BASE: "https://docstracker.marshsecurity.org"
 
     steps:
       - name: Compute date for "since"
         id: dates
+        shell: bash
         run: |
-          DAYS=${{ matrix.days }}
+          DAYS="${{ matrix.days }}"
           # GNU date on ubuntu-latest
           SINCE=$(date -u -d "$DAYS days ago" +%F)
-          echo "since=$SINCE" >> $GITHUB_OUTPUT
+          echo "since=$SINCE" >> "$GITHUB_OUTPUT"
 
       - name: Warm Search (CF Pages Function)
+        shell: bash
         run: |
           # Build the same query the app uses, but repo-scoped
           Q="repo:${{ matrix.repo }} is:pr is:merged merged:>=${{ steps.dates.outputs.since }}"
-          # URL encode via Python for safety
-          Q_ENC=$(python3 - <<'PY'
-import sys, urllib.parse as u
-print(u.quote(sys.argv[1]))
-PY
-"$Q")
+          # URL-encode via Python (no heredoc to keep YAML happy)
+          Q_ENC=$(python3 -c 'import sys, urllib.parse as u; print(u.quote(sys.argv[1]))' "$Q")
           URL="$BASE/api/search?q=$Q_ENC&per_page=50&since=${{ steps.dates.outputs.since }}"
           echo "GET $URL"
           curl -fsSL --retry 3 --retry-delay 3 "$URL" > /dev/null
 
       - name: Warm RSS (CF Pages Function)
+        shell: bash
         run: |
           URL="$BASE/api/rss?repo=${{ matrix.repo }}&days=${{ matrix.days }}"
           echo "GET $URL"
