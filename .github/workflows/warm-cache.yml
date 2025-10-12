@@ -1,0 +1,56 @@
+name: Warm Cloudflare Pages cache (Search + RSS)
+
+on:
+  # Runs daily at 06:15 UTC
+  schedule:
+    - cron: "15 6 * * *"
+  # Allow manual run from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  warm:
+    runs-on: ubuntu-latest
+
+    # Pick the repos to cache (extend as you wish)
+    strategy:
+      matrix:
+        repo:
+          - MicrosoftDocs/defender-docs
+          - MicrosoftDocs/azure-docs
+          - MicrosoftDocs/microsoft-365-docs
+          - MicrosoftDocs/msteams-docs
+          - MicrosoftDocs/win32
+          - MicrosoftDocs/edge-developer
+        days: [7, 14]  # warm multiple lookback windows (optional)
+
+    env:
+      BASE: https://docstracker.marshsecurity.org
+
+    steps:
+      - name: Compute date for "since"
+        id: dates
+        run: |
+          DAYS=${{ matrix.days }}
+          # GNU date on ubuntu-latest
+          SINCE=$(date -u -d "$DAYS days ago" +%F)
+          echo "since=$SINCE" >> $GITHUB_OUTPUT
+
+      - name: Warm Search (CF Pages Function)
+        run: |
+          # Build the same query the app uses, but repo-scoped
+          Q="repo:${{ matrix.repo }} is:pr is:merged merged:>=${{ steps.dates.outputs.since }}"
+          # URL encode via Python for safety
+          Q_ENC=$(python3 - <<'PY'
+import sys, urllib.parse as u
+print(u.quote(sys.argv[1]))
+PY
+"$Q")
+          URL="$BASE/api/search?q=$Q_ENC&per_page=50&since=${{ steps.dates.outputs.since }}"
+          echo "GET $URL"
+          curl -fsSL --retry 3 --retry-delay 3 "$URL" > /dev/null
+
+      - name: Warm RSS (CF Pages Function)
+        run: |
+          URL="$BASE/api/rss?repo=${{ matrix.repo }}&days=${{ matrix.days }}"
+          echo "GET $URL"
+          curl -fsSL --retry 3 --retry-delay 3 "$URL" > /dev/null
