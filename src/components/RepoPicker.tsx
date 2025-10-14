@@ -3,6 +3,7 @@ import { Select } from './ui/select'
 
 const OPTIONS = [
   'MicrosoftDocs/defender-docs',
+  'MicrosoftDocs/entra-docs',
   'MicrosoftDocs/microsoft-365-docs',
   'MicrosoftDocs/azure-docs',
   'MicrosoftDocs/msteams-docs',
