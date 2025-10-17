@@ -13,6 +13,7 @@ const OPTIONS = [
   'MicrosoftDocs/azure-docs-cli',
   'MicrosoftDocs/win32',
   'MicrosoftDocs/edge-developer',
+  'MicrosoftDocs/dataexplorer-docs',
   // add any other frequent repos here
 ]
 
