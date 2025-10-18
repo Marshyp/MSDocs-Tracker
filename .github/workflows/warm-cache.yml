@@ -1,0 +1,82 @@
+# .github/workflows/warm-cache.yml
+name: Warm Cloudflare Pages cache (Search + RSS)
+
+on:
+  schedule:
+    - cron: "15 6 * * *"   # Daily at 06:15 UTC
+  workflow_dispatch:
+
+jobs:
+  warm:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        repo:
+          - MicrosoftDocs/defender-docs
+          - MicrosoftDocs/azure-docs
+          - MicrosoftDocs/microsoft-365-docs
+          - MicrosoftDocs/msteams-docs
+          - MicrosoftDocs/win32
+          - MicrosoftDocs/edge-developer
+        days: [7, 14]
+
+    env:
+      BASE: "https://docstracker.marshsecurity.org"
+
+    steps:
+      - name: Compute date for "since"
+        id: dates
+        shell: bash
+        run: |
+          DAYS="${{ matrix.days }}"
+          SINCE=$(date -u -d "$DAYS days ago" +%F)
+          echo "since=$SINCE" >> "$GITHUB_OUTPUT"
+
+      - name: Warm Search (per repo)
+        shell: bash
+        run: |
+          Q="repo:${{ matrix.repo }} is:pr is:merged merged:>=${{ steps.dates.outputs.since }}"
+          Q_ENC=$(python3 -c 'import sys, urllib.parse as u; print(u.quote(sys.argv[1]))' "$Q")
+          URL="$BASE/api/search?q=$Q_ENC&per_page=50&since=${{ steps.dates.outputs.since }}"
+          echo "GET $URL"
+          curl -fsSL --retry 3 --retry-delay 3 "$URL" > /dev/null
+
+      - name: Warm RSS (per repo)
+        shell: bash
+        run: |
+          URL="$BASE/api/rss?repo=${{ matrix.repo }}&days=${{ matrix.days }}"
+          echo "GET $URL"
+          curl -fsSL --retry 3 --retry-delay 3 "$URL" > /dev/null
+
+  warm_combined:
+    runs-on: ubuntu-latest
+    needs: warm
+    env:
+      BASE: "https://docstracker.marshsecurity.org"
+
+    steps:
+      - name: Warm combined RSS: Defender + Azure
+        run: |
+          URL="$BASE/api/rss-many?repos=MicrosoftDocs/defender-docs,MicrosoftDocs/azure-docs&days=14"
+          echo "GET $URL"
+          curl -fsSL --retry 3 --retry-delay 3 "$URL" > /dev/null
+
+      - name: Warm combined RSS: M365 + Teams
+        run: |
+          URL="$BASE/api/rss-many?repos=MicrosoftDocs/microsoft-365-docs,MicrosoftDocs/msteams-docs&days=14"
+          echo "GET $URL"
+          curl -fsSL --retry 3 --retry-delay 3 "$URL" > /dev/null
+
+  warm_purview:
+    runs-on: ubuntu-latest
+    needs: warm
+    env:
+      BASE: "https://docstracker.marshsecurity.org"
+
+    steps:
+      - name: Warm Purview Learn RSS
+        run: |
+          URL="$BASE/api/rss-pages?base=https://learn.microsoft.com/en-us/purview/&depth=1&limit=60"
+          echo "GET $URL"
+          curl -fsSL --retry 3 --retry-delay 3 "$URL" > /dev/null

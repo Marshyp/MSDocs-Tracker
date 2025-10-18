@@ -1,3 +1,4 @@
+// src/lib/github.ts
 export type PRItem = {
   id: number
   number: number
@@ -10,6 +11,9 @@ export type PRItem = {
   user?: { login?: string }
   body?: string
 }
+
+export type MultiRepoError = { repo: string; message: string }
+export type MultiResult = { items: PRItem[]; errors: MultiRepoError[] }
 
 function getToken(): string | null {
   try {
@@ -57,23 +61,24 @@ export async function searchMergedPRsMulti(
   sinceISO: string,
   query: string,
   perRepo = 50
-): Promise<{ items: PRItem[] }> {
+): Promise<MultiResult> {
   const uniq = Array.from(new Set(repos.map(r => r.trim()).filter(Boolean)))
-  if (!uniq.length) return { items: [] }
+  if (!uniq.length) return { items: [], errors: [] }
 
-  // One cached request per repo (via /api/search), then merge on the client
+  const errors: MultiRepoError[] = []
+
   const results = await Promise.all(
     uniq.map(async (r) => {
       try {
         const rres = await searchMergedPRs(r, sinceISO, query, perRepo)
         return rres.items || []
-      } catch {
+      } catch (e: any) {
+        errors.push({ repo: r, message: e?.message ?? String(e) })
         return []
       }
     })
   )
 
-  // Merge, de-dupe by id, and sort by merged/updated desc
   const seen = new Set<number>()
   const merged: PRItem[] = []
   for (const arr of results) {
@@ -91,7 +96,7 @@ export async function searchMergedPRsMulti(
     return (isNaN(tb) ? 0 : tb) - (isNaN(ta) ? 0 : ta)
   })
 
-  return { items: merged }
+  return { items: merged, errors }
 }
 
 export async function searchReposInOrg(org: string, text: string, perPage = 10) {
