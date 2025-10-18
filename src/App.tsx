@@ -1,4 +1,3 @@
-// src/App.tsx
 import React from 'react'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { RepoPicker } from '@/components/RepoPicker'
@@ -9,7 +8,6 @@ export default function App() {
   const [repo, setRepo] = React.useState<string>(() => localStorage.getItem('repo') || 'MicrosoftDocs/defender-docs')
   const [daysBack, setDaysBack] = React.useState<number>(() => Number(localStorage.getItem('daysBack')) || 14)
   const [query, setQuery] = React.useState<string>(() => localStorage.getItem('query') || '')
-
   const [extraRepos, setExtraRepos] = React.useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem('extraRepos') || '[]') } catch { return [] }
   })
@@ -18,6 +16,7 @@ export default function App() {
   const [items, setItems] = React.useState<(PRItem & { repoName: string })[]>([])
   const [error, setError] = React.useState<string>('')
   const [multiErrors, setMultiErrors] = React.useState<MultiRepoError[]>([])
+  const [lastUpdated, setLastUpdated] = React.useState<Date | null>(null)
 
   const sinceISO = React.useMemo(() => {
     const d = new Date()
@@ -62,6 +61,7 @@ export default function App() {
     setLoading(true); setError(''); setMultiErrors([])
 
     try {
+      const startTime = Date.now()
       if (all.length === 1) {
         const data = await searchMergedPRs(repo, sinceISO, query, 50)
         const arr = (data?.items ?? []).map(it => ({
@@ -78,6 +78,9 @@ export default function App() {
         setItems(arr.filter(it => all.some(r => r.toLowerCase() === it.repoName.toLowerCase())))
         setMultiErrors(data.errors || [])
       }
+
+      // ✅ Record the last update time (approximate)
+      setLastUpdated(new Date(startTime))
     } catch (e: any) {
       setError(e?.message ?? String(e))
     } finally {
@@ -156,64 +159,32 @@ export default function App() {
           )}
         </div>
 
-        {/* Right: Showing + RSS */}
+        {/* Right: RSS */}
         <div className="ml-auto flex flex-wrap items-center gap-2">
-          <span
-            className="inline-flex h-8 items-center rounded-md border border-slate-700/20 bg-slate-800/5 px-2 text-xs text-slate-500 dark:border-slate-700/40 dark:bg-slate-800/30 dark:text-slate-400 whitespace-nowrap"
-            title={`repo(s) merged:>=${sinceISO}`}
-          >
-            Showing&nbsp;
-            <code className="rounded bg-slate-800/10 px-1 py-[2px] dark:bg-slate-800/30">
-              {extraRepos.length ? `combined(${[repo, ...extraRepos].join(', ')})` : `repo:${repo}`} merged:&gt;={sinceISO}
-            </code>
-          </span>
-
-          <a
-            className="inline-flex h-8 items-center rounded-md border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-900 hover:border-sky-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-            href={rssUrl}
-            target="_blank"
-            rel="noreferrer"
-          >
-            RSS Feed
-          </a>
+          <a className="inline-flex h-8 items-center rounded-md border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-900 hover:border-sky-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            href={rssUrl} target="_blank" rel="noreferrer">RSS Feed</a>
 
           {combinedRssUrl && (
-            <a
-              className="inline-flex h-8 items-center rounded-md border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-900 hover:border-sky-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-              href={combinedRssUrl}
-              target="_blank"
-              rel="noreferrer"
-              title="Combined repositories RSS"
-            >
-              Combined RSS
-            </a>
+            <a className="inline-flex h-8 items-center rounded-md border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-900 hover:border-sky-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+              href={combinedRssUrl} target="_blank" rel="noreferrer" title="Combined repositories RSS">Combined RSS</a>
           )}
 
-          <a
-            className="inline-flex h-8 items-center rounded-md border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-900 hover:border-sky-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-            href={purviewRssUrl}
-            target="_blank"
-            rel="noreferrer"
-            title="Purview docs (learn.microsoft.com) RSS"
-          >
-            Purview RSS
-          </a>
+          <a className="inline-flex h-8 items-center rounded-md border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-900 hover:border-sky-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            href={purviewRssUrl} target="_blank" rel="noreferrer" title="Purview docs (learn.microsoft.com) RSS">Purview RSS</a>
         </div>
       </div>
 
-      {/* Error from overall request */}
       {error && (
         <div className="mb-3 rounded-xl border border-red-400/50 bg-red-500/10 p-3 text-sm">
           GitHub API error: {error}
         </div>
       )}
 
-      {/* Partial errors from combined search */}
       {multiErrors.length > 0 && (
         <div className="mb-3 rounded-xl border border-amber-400/60 bg-amber-500/10 p-3 text-sm">
           <div className="font-semibold">Some repositories could not be fetched:</div>
           <div className="mt-2 flex flex-wrap gap-2">
-            {multiErrors.map((e) => (
+            {multiErrors.map(e => (
               <span key={e.repo} className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-100 px-2 py-0.5 text-xs text-amber-900 dark:border-amber-900/50 dark:bg-amber-900/30 dark:text-amber-200" title={e.message}>
                 {e.repo}
               </span>
@@ -223,19 +194,28 @@ export default function App() {
         </div>
       )}
 
-      {/* Cards grid */}
       <div className="grid grid-cols-[repeat(auto-fill,minmax(290px,1fr))] gap-3">
         {items.map(it => (
           <PRCard key={it.id} item={it} />
         ))}
       </div>
 
-      {/* Footer */}
-      <footer className="mt-8 text-sm text-slate-400">
-        Follow my Security blog:{' '}
-        <a href="https://marshsecurity.org/" target="_blank" rel="noreferrer" className="text-sky-600 hover:underline dark:text-sky-400">
-          Marsh Security
-        </a>
+      {/* Footer with last updated */}
+      <footer className="mt-8 text-sm text-slate-400 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+          Follow my Security blog:{' '}
+          <a href="https://marshsecurity.org/" target="_blank" rel="noreferrer" className="text-sky-600 hover:underline dark:text-sky-400">
+            Marsh Security
+          </a>
+        </div>
+        {lastUpdated && (
+          <div className="text-xs opacity-70">
+            Last updated: {lastUpdated.toLocaleString(undefined, {
+              dateStyle: 'medium',
+              timeStyle: 'short',
+            })}
+          </div>
+        )}
       </footer>
     </div>
   )
