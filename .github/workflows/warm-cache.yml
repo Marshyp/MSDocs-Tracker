@@ -1,9 +1,8 @@
-# .github/workflows/warm-cache.yml
 name: Warm Cloudflare Pages cache (Search + RSS)
 
 on:
   schedule:
-    - cron: "15 6 * * *"   # Daily at 06:15 UTC
+    - cron: "15 6 * * *" # Daily at 06:15 UTC
   workflow_dispatch:
 
 jobs:
@@ -56,13 +55,15 @@ jobs:
       BASE: "https://docstracker.marshsecurity.org"
 
     steps:
-      - name: Warm combined RSS: Defender + Azure
+      - name: Warm combined RSS (Defender + Azure)
+        shell: bash
         run: |
           URL="$BASE/api/rss-many?repos=MicrosoftDocs/defender-docs,MicrosoftDocs/azure-docs&days=14"
           echo "GET $URL"
           curl -fsSL --retry 3 --retry-delay 3 "$URL" > /dev/null
 
-      - name: Warm combined RSS: M365 + Teams
+      - name: Warm combined RSS (M365 + Teams)
+        shell: bash
         run: |
           URL="$BASE/api/rss-many?repos=MicrosoftDocs/microsoft-365-docs,MicrosoftDocs/msteams-docs&days=14"
           echo "GET $URL"
@@ -76,6 +77,7 @@ jobs:
 
     steps:
       - name: Warm Purview Learn RSS
+        shell: bash
         run: |
           URL="$BASE/api/rss-pages?base=https://learn.microsoft.com/en-us/purview/&depth=1&limit=60"
           echo "GET $URL"
