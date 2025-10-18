@@ -1,4 +1,3 @@
-// src/lib/github.ts
 export type PRItem = {
   id: number
   number: number
@@ -106,9 +105,30 @@ export async function searchReposInOrg(org: string, text: string, perPage = 10) 
 }
 
 export async function getPullFiles(ownerRepo: string, number: number) {
-  const url = `https://api.github.com/repos/${ownerRepo}/pulls/${number}/files?per_page=100`
-  return fetchJson<any[]>(url)
+  // Use our own Cloudflare function (cached, token-aware)
+  const params = new URLSearchParams({ repo: ownerRepo, pr: String(number) });
+  // Allow ?token=... in the page URL to be forwarded if present (optional)
+  try {
+    const token = new URL(window.location.href).searchParams.get('token');
+    if (token) params.set('token', token);
+  } catch {}
+
+  const edgeUrl = `/api/files?${params.toString()}`;
+  try {
+    const res = await fetch(edgeUrl, { headers: { Accept: 'application/json' } });
+    if (!res.ok) throw new Error(`Edge ${res.status}`);
+    return (await res.json()) as any[];
+  } catch {
+    // Fallback directly to GitHub (last resort)
+    const direct = `https://api.github.com/repos/${ownerRepo}/pulls/${number}/files?per_page=100`;
+    const r = await fetch(direct, {
+      headers: { Accept: 'application/vnd.github+json' },
+    });
+    if (!r.ok) throw new Error(`GitHub ${r.status}`);
+    return (await r.json()) as any[];
+  }
 }
+
 
 export function toFilesUrl(prHtmlUrl: string) {
   return `${prHtmlUrl}/files`
