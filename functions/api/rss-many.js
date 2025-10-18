@@ -94,7 +94,7 @@ export async function onRequest(context) {
 </rss>`
 
   const res = new Response(xml, {
-    headers: { "content-type": "application/rss+xml; charset=utf-8", "Cache-Control": "public, s-maxage=21600" }
+    headers: { "content-type": "application/rss+xml; charset=utf-8", "Cache-Control": "public, s-maxage=900" } // 15 minute cache
   })
   await cache.put(cacheKey, res.clone())
   return res

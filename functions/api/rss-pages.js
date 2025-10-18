@@ -96,7 +96,7 @@ export async function onRequest(context) {
   return new Response(xml, {
     headers: {
       "content-type": "application/rss+xml; charset=utf-8",
-      "Cache-Control": "public, s-maxage=1800" // 30 min edge cache
+      "Cache-Control": "public, s-maxage=600" // 10 min edge cache
     }
   });
 }
