@@ -5,35 +5,59 @@ import { Card, CardTitle } from './ui/card'
 type LabelKind = 'new' | 'updated'
 
 function computeLabelKind(files: any[]): LabelKind {
-  // If any file was ADDED in this PR, treat as "New docs"
-  if (Array.isArray(files) && files.some(f => String(f?.status).toLowerCase() === 'added')) {
-    return 'new'
-  }
-  // Otherwise treat as "Updated docs"
-  return 'updated'
+  return Array.isArray(files) && files.some(f => String(f?.status).toLowerCase() === 'added')
+    ? 'new' : 'updated';
 }
-
 function labelClasses(kind: LabelKind) {
-  // Green for 'new', Blue for 'updated'
   return kind === 'new'
     ? 'inline-flex items-center rounded-full border border-green-200 bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:border-green-900/50 dark:bg-green-900/30 dark:text-green-200'
-    : 'inline-flex items-center rounded-full border border-blue-200 bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:border-sky-900/50 dark:bg-sky-900/30 dark:text-sky-200'
+    : 'inline-flex items-center rounded-full border border-blue-200 bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:border-sky-900/50 dark:bg-sky-900/30 dark:text-sky-200';
 }
+function labelText(kind: LabelKind) { return kind === 'new' ? 'New docs' : 'Updated docs' }
 
-function labelText(kind: LabelKind) {
-  return kind === 'new' ? 'New docs' : 'Updated docs'
+function isUnhelpfulTitle(t: string) {
+  return /repo sync for protected branch/i.test(t) || /sync.*branch/i.test(t);
+}
+function docsFilenames(files: any[]) {
+  const names = (files || [])
+    .map(f => String(f?.filename || ''))
+    .filter(n => n && (n.endsWith('.md') || n.endsWith('.yml') || n.includes('/docs/') || n.includes('/articles/')));
+  return names;
+}
+function shorten(list: string[], n = 3) {
+  const head = list.slice(0, n);
+  const rest = list.length - head.length;
+  return head.join(', ') + (rest > 0 ? `, +${rest} more` : '');
 }
 
 export function PRCard({ item }: { item: PRItem & { repoName: string } }) {
   const [labelKind, setLabelKind] = React.useState<LabelKind>('updated')
+  const [derivedTitle, setDerivedTitle] = React.useState<string | null>(null)
 
   React.useEffect(() => {
-    // Lazy-load files for this PR and compute the label.
-    // If the request fails (rate limit/network), fall back to "updated".
     getPullFiles(item.repoName, item.number)
-      .then(files => setLabelKind(computeLabelKind(files)))
-      .catch(() => setLabelKind('updated'))
-  }, [item.repoName, item.number])
+      .then(files => {
+        const kind = computeLabelKind(files)
+        setLabelKind(kind)
+
+        // If the PR title isn't useful, synthesize a better one from filenames.
+        if (isUnhelpfulTitle(item.title)) {
+          const names = docsFilenames(files)
+          if (names.length) {
+            const summary = shorten(names, 3)
+            setDerivedTitle((kind === 'new' ? 'New docs: ' : 'Updated docs: ') + summary)
+          } else {
+            setDerivedTitle(null)
+          }
+        } else {
+          setDerivedTitle(null)
+        }
+      })
+      .catch(() => {
+        setLabelKind('updated')
+        setDerivedTitle(null)
+      })
+  }, [item.repoName, item.number, item.title])
 
   const merged = item.closed_at || item.merged_at || item.updated_at
   const filesUrl = toFilesUrl(item.html_url)
@@ -47,7 +71,7 @@ export function PRCard({ item }: { item: PRItem & { repoName: string } }) {
           rel="noreferrer"
           className="text-sky-600 hover:underline dark:text-sky-400"
         >
-          {item.title}
+          {derivedTitle || item.title}
         </a>
       </CardTitle>
 
@@ -69,8 +93,6 @@ export function PRCard({ item }: { item: PRItem & { repoName: string } }) {
         )}
 
         {merged && <span>Merged: {new Date(merged).toLocaleString()}</span>}
-
-        {/* Always show a label (green when any file added, blue otherwise) */}
         <span className={labelClasses(labelKind)}>{labelText(labelKind)}</span>
       </div>
 
